@@ -1,8 +1,8 @@
 <template>
-  <div id="main-container">
+  <div id='main-container'>
     <span>Shake Level</span>
-    <span class="bold">Lv. {{ shakeLevel }}</span>
-    <div class="detail-points-wrapper">
+    <span class='bold'>Lv. {{ shakeLevel }}</span>
+    <div class='detail-points-wrapper'>
       <div>
         <span>Green</span>
         <span>{{ greenPoints }}</span>
@@ -19,36 +19,38 @@
   </div>
 </template>
 
-<script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
-import hnapi from "@/assets/hnapi";
-import { IShakeLevel } from "@/assets/interfaces/api/ShakeLevel";
+<script lang='ts'>
+import { Component, Vue } from 'vue-property-decorator'
+import hnapi from '@/assets/hnapi'
+import { IShakeLevel } from '@/assets/interfaces/api/ShakeLevel'
 
 @Component
 export default class ShakeLevel extends Vue {
-  private updateTimer: null | ReturnType<typeof setInterval> = null;
-  private shakeLevel = 0;
-  private greenPoints = 0;
-  private yellowPoints = 0;
-  private redPoints = 0;
+  private updateTimer: null | ReturnType<typeof setInterval> = null
+  private updateInterval = 2500
+  private shakeLevel = 0
+  private greenPoints = 0
+  private yellowPoints = 0
+  private redPoints = 0
 
   public mounted(): void {
-    hnapi.initialize();
-    this.updateTimer = setInterval(this._updateInfo, 2500);
+    hnapi.initialize()
+    this.updateTimer = setInterval(this._updateInfo, this.updateInterval)
   }
 
   private _updateInfo(): void {
-    hnapi.makeApiRequest("/api/shake_level").then((result: IShakeLevel) => {
-      this.shakeLevel = result.shake_level;
-      this.greenPoints = result.green;
-      this.yellowPoints = result.yellow;
-      this.redPoints = result.red;
-    });
+    hnapi.makeApiRequest('/api/shake_level', this.updateInterval)
+      .then((result: IShakeLevel) => {
+        this.shakeLevel = result.shake_level
+        this.greenPoints = result.green
+        this.yellowPoints = result.yellow
+        this.redPoints = result.red
+      })
   }
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang='scss'>
 @import "~@/assets/globals";
 
 

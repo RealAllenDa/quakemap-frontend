@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import { _IIntensities, _ITsunamiComments } from '~/assets/interfaces'
+import { IIntensities } from '~/assets/interfaces/parsing/Intensities'
 
 export interface IHypocenter {
   depth: string
@@ -8,13 +8,18 @@ export interface IHypocenter {
   name: string
 }
 
+interface ITsunamiComments {
+  domestic: string;
+  global: string;
+}
+
 export interface IQuakeInfo {
-  area_intensity: _IIntensities
+  area_intensity: IIntensities
   hypocenter: IHypocenter // TODO: To private
   magnitude: string
   max_intensity: string
   occur_time: string
   receive_time: string
-  tsunami_comments: _ITsunamiComments
+  tsunami_comments: ITsunamiComments
   type: string
 }

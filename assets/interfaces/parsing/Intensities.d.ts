@@ -8,7 +8,7 @@ interface __IIntensityStations {
   // TODO
 }
 
-interface _IIntensities {
+export interface IIntensities {
   areas?: __IIntensityAreas
   station?: __IIntensityStations
 }
