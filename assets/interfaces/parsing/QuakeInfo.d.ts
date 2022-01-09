@@ -9,13 +9,13 @@ export interface IHypocenter {
 }
 
 interface ITsunamiComments {
-  domestic: string;
-  global: string;
+  domestic: string
+  foreign: string
 }
 
 export interface IQuakeInfo {
   area_intensity: IIntensities
-  hypocenter: IHypocenter // TODO: To private
+  hypocenter: IHypocenter
   magnitude: string
   max_intensity: string
   occur_time: string

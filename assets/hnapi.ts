@@ -1,4 +1,8 @@
 import axios from 'axios'
+import {
+  IFetchGeoJsonConfig,
+  IGeoJsonData,
+} from '~/assets/interfaces/parsing/GeoJson'
 
 class _ReqFailedErr extends Error {
   constructor(error: Error) {
@@ -8,6 +12,7 @@ class _ReqFailedErr extends Error {
 }
 
 class HNAPI {
+  public readonly geoJson: IGeoJsonData = {}
   private readonly mode = process.env.NODE_ENV
   private readonly color = this.mode === 'production' ? '#43bb88' : 'orange'
   private readonly version = process.env.version
@@ -34,7 +39,30 @@ class HNAPI {
     }
   }
 
-  initialize(): void {
+  async fetchGeoJson(fetchGeoJsonConfig: IFetchGeoJsonConfig): Promise<void> {
+    if (fetchGeoJsonConfig.japan) {
+      await this.makeApiRequest('/static/geojson/japan.json').then((res) => {
+        this.geoJson.japan = res
+      })
+    }
+    if (fetchGeoJsonConfig.countries) {
+      await this.makeApiRequest(
+        '/static/geojson/countries_without_japan.json'
+      ).then((res) => {
+        this.geoJson.countries = res
+      })
+    }
+    if (fetchGeoJsonConfig.japanWithSubAreas) {
+      await this.makeApiRequest(
+        '/static/geojson/japan_with_sub_areas.json'
+      ).then((res) => {
+        this.geoJson.japanWithSubAreas = res
+      })
+    }
+  }
+
+  async initialize(fetchGeoJsonConfig: IFetchGeoJsonConfig): Promise<void> {
+    await this.fetchGeoJson(fetchGeoJsonConfig)
     // eslint-disable-next-line no-console
     console.log(
       `${process.env.logo}\n\n\n` +
@@ -71,6 +99,6 @@ class HNAPI {
   }
 }
 
-const hnapi = new HNAPI(true)
+const hnapi = new HNAPI()
 
 export default hnapi
