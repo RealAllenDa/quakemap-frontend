@@ -65,6 +65,7 @@ export default {
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
     extend(config) {
+      // noinspection JSUnresolvedVariable
       config.plugins.push(
         new webpack.DefinePlugin({
           'process.env.version': JSON.stringify(version),
@@ -72,6 +73,7 @@ export default {
           'process.env.logo': JSON.stringify(logo),
         })
       )
+      // noinspection JSUnresolvedVariable
       config.plugins.push(
         new webpack.BannerPlugin({
           banner:

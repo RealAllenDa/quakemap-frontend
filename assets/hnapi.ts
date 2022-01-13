@@ -3,6 +3,8 @@ import {
   IFetchGeoJsonConfig,
   IGeoJsonData,
 } from '~/assets/interfaces/parsing/GeoJson'
+import { MapConfig } from '~/assets/config/map'
+import { IntensityConfig } from '~/assets/config/intensities'
 
 class _ReqFailedErr extends Error {
   constructor(error: Error) {
@@ -13,6 +15,9 @@ class _ReqFailedErr extends Error {
 
 class HNAPI {
   public readonly geoJson: IGeoJsonData = {}
+  public readonly mapConfig = new MapConfig()
+  public readonly intensityConfig = new IntensityConfig()
+
   private readonly mode = process.env.NODE_ENV
   private readonly color = this.mode === 'production' ? '#43bb88' : 'orange'
   private readonly version = process.env.version
@@ -41,23 +46,31 @@ class HNAPI {
 
   async fetchGeoJson(fetchGeoJsonConfig: IFetchGeoJsonConfig): Promise<void> {
     if (fetchGeoJsonConfig.japan) {
-      await this.makeApiRequest('/static/geojson/japan.json').then((res) => {
-        this.geoJson.japan = res
-      })
+      await this.makeApiRequest('/static/geojson/japan.json')
+        .then((res) => {
+          this.geoJson.japan = res
+        })
+        .catch((error) => {
+          throw new Error('[!] Failed to load japan geojson: ' + error)
+        })
     }
     if (fetchGeoJsonConfig.countries) {
-      await this.makeApiRequest(
-        '/static/geojson/countries_without_japan.json'
-      ).then((res) => {
-        this.geoJson.countries = res
-      })
+      await this.makeApiRequest('/static/geojson/countries_without_japan.json')
+        .then((res) => {
+          this.geoJson.countries = res
+        })
+        .catch((error) => {
+          throw new Error('[!] Failed to load countries geojson: ' + error)
+        })
     }
     if (fetchGeoJsonConfig.japanWithSubAreas) {
-      await this.makeApiRequest(
-        '/static/geojson/japan_with_sub_areas.json'
-      ).then((res) => {
-        this.geoJson.japanWithSubAreas = res
-      })
+      await this.makeApiRequest('/static/geojson/japan_with_sub_areas.json')
+        .then((res) => {
+          this.geoJson.japanWithSubAreas = res
+        })
+        .catch((error) => {
+          throw new Error('[!] Failed to load japanSubAreas geojson: ' + error)
+        })
     }
   }
 

@@ -24,11 +24,11 @@ export interface IEEW {
   is_test: boolean
   magnitude: string
   max_intensity: string
-  p_wave: number
-  s_wave: number
+  p_wave: number | null
+  s_wave: number | null
   report_flag: number
-  report_id: number
-  report_num: number
+  report_id: string
+  report_num: string
   report_time: string
   status: number
   type: string

@@ -1,70 +1,70 @@
 <template>
-  <div id="main-container">
-    <div v-if="!showEew" id="intensity-display" class="window">
-      <div id="earthquake-description">
-        <IntensityIcon :intensity="maximumIntensity"></IntensityIcon>
-        <div id="earthquake-info" class="sub-window">
+  <div id='main-container'>
+    <div v-if='!showEew' id='intensity-display' class='window'>
+      <div id='earthquake-description'>
+        <IntensityIcon :intensity='maximumIntensity'></IntensityIcon>
+        <div id='earthquake-info' class='sub-window'>
           <IntensityReport
             v-if="currentType === 'ScalePrompt'"
-            :occur-time="occurTime"
+            :occur-time='occurTime'
           ></IntensityReport>
           <EarthquakeInformation
             v-else
-            :hypocenter-info="hypocenterInfo"
-            :is-eew="false"
-            :magnitude="magnitude"
-            :time="occurTime"
+            :hypocenter-info='hypocenterInfo'
+            :is-eew='false'
+            :magnitude='magnitude'
+            :time='occurTime'
           ></EarthquakeInformation>
         </div>
       </div>
-      <Banner :text="tsunamiCommentsDomestic" type="domestic"></Banner>
-      <Banner :text="tsunamiCommentsForeign" type="foreign"></Banner>
+      <Banner :text='tsunamiCommentsDomestic' type='domestic'></Banner>
+      <Banner :text='tsunamiCommentsForeign' type='foreign'></Banner>
     </div>
-    <QuakeMap v-if="mapReady" :geo-json="geoJson"></QuakeMap>
-    <div v-if="showEew" id="eew-display" class="window">
-      <EEWFlag id="drill-flag"
-               :display="eewIsDrill"
-               message="Drill - Not Real Situation"></EEWFlag>
-      <EEWFlag id="expected-flag"
-               :display="eewIsExpected"
-               message="Expected Intensity"></EEWFlag>
-      <EEWBanner :text="eewType" class="sub-window"></EEWBanner>
-      <EEWInfo :advice="eewAdvice"
-               :report-number="eewReportNum"></EEWInfo>
-      <div class="eew-earthquake sub-window">
+    <QuakeMap v-if='mapReady' ref='quakeMap' :geo-json='geoJson'></QuakeMap>
+    <div v-if='showEew' id='eew-display' class='window'>
+      <EEWFlag id='drill-flag'
+               :display='eewIsDrill'
+               message='Drill - Not Real Situation'></EEWFlag>
+      <EEWFlag id='expected-flag'
+               :display='eewIsExpected'
+               message='Expected Intensity'></EEWFlag>
+      <EEWBanner :text='eewType' class='sub-window'></EEWBanner>
+      <EEWInfo :advice='eewAdvice'
+               :report-number='eewReportNum'></EEWInfo>
+      <div class='eew-earthquake sub-window'>
         <IntensityIcon
-          :intensity="maximumIntensity"
-          :is-eew="true">
+          :intensity='maximumIntensity'
+          :is-eew='true'>
         </IntensityIcon>
         <EarthquakeInformation
-          :hypocenter-info="hypocenterInfo"
-          :is-eew="true"
-          :magnitude="magnitude"
-          :time="eewReceiveTime"
+          :hypocenter-info='hypocenterInfo'
+          :is-eew='true'
+          :magnitude='magnitude'
+          :time='eewReceiveTime'
         ></EarthquakeInformation>
       </div>
     </div>
   </div>
 </template>
 
-<script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
-import { IHypocenter, IQuakeInfo } from "@/assets/interfaces/parsing/QuakeInfo";
-import { IInfo } from "@/assets/interfaces/api/QuakeInfo";
-import hnapi from "@/assets/hnapi";
-import EarthquakeDescription from "@/components/map/EarthquakeDescription.vue";
-import IntensityIcon from "@/components/map/IntensityIcon.vue";
-import Banner from "~/components/map/TsunamiBanner.vue";
-import IntensityReport from "@/components/map/IntensityReport.vue";
-import EarthquakeInformation from "@/components/map/EarthquakeInformation.vue";
-import isEqual from "@/assets/lodash/isEqual";
-import { IEEW } from "~/assets/interfaces/parsing/EEW";
-import EEWFlag from "~/components/map/EEWFlag.vue";
-import EEWBanner from "~/components/map/EEWBanner.vue";
-import EEWInfo from "~/components/map/EEWInfo.vue";
-import { IBannerType } from "~/assets/interfaces/parsing/Banner";
-import QuakeMap from "~/components/map/QuakeMap.vue";
-import { IGeoJsonData } from "~/assets/interfaces/parsing/GeoJson";
+<script lang='ts'>
+import { Component, Vue } from 'vue-property-decorator'
+import { IHypocenter, IQuakeInfo } from '@/assets/interfaces/parsing/QuakeInfo'
+import { IInfo } from '@/assets/interfaces/api/QuakeInfo'
+import hnapi from '@/assets/hnapi'
+import EarthquakeDescription from '@/components/map/EarthquakeDescription.vue'
+import IntensityIcon from '@/components/map/IntensityIcon.vue'
+import Banner from '~/components/map/TsunamiBanner.vue'
+import IntensityReport from '@/components/map/IntensityReport.vue'
+import EarthquakeInformation from '@/components/map/EarthquakeInformation.vue'
+import isEqual from '@/assets/lodash/isEqual'
+import { IEEW } from '~/assets/interfaces/parsing/EEW'
+import EEWFlag from '~/components/map/EEWFlag.vue'
+import EEWBanner from '~/components/map/EEWBanner.vue'
+import EEWInfo from '~/components/map/EEWInfo.vue'
+import { IBannerType } from '~/assets/interfaces/parsing/Banner'
+import QuakeMap from '~/components/map/QuakeMap.vue'
+import { IGeoJsonData } from '~/assets/interfaces/parsing/GeoJson'
 
 @Component({
   components: {
@@ -80,43 +80,45 @@ import { IGeoJsonData } from "~/assets/interfaces/parsing/GeoJson";
   }
 })
 export default class Map extends Vue {
-  private updateTimer: null | ReturnType<typeof setInterval> = null;
-  private updateInterval = 2500;
-  private geoJson?: IGeoJsonData;
-  private mapReady = false;
+  $refs!: {
+    quakeMap: QuakeMap
+  }
 
+  private updateTimer: null | ReturnType<typeof setInterval> = null
+  private updateInterval = 2500
+  private geoJson?: IGeoJsonData
+  private mapReady = false
   private hypocenterInfo: IHypocenter = {
-    name: "---",
-    depth: "---",
+    name: '---',
+    depth: '---',
     latitude: -999,
     longitude: -999
-  };
+  }
 
-  private maximumIntensity = "--";
-  private occurTime = "XXXX/XX/XX XX:XX";
-  private magnitude = "---";
-  private currentType = "Unknown";
-  private tsunamiCommentsDomestic = "Fetching";
-  private tsunamiCommentsForeign = "Fetching";
-
-  private showEew = false;
-  private eewInEffect = false;
-  private messagesBeforeEew?: IQuakeInfo[];
-  private lastEewReportNum = -1;
-  private suspendEewUntilNumberChange = false;
-  private eewReceiveTime = "XXXX/XX/XX XX:XX";
-  private eewReportNum = "";
-  private eewIsDrill = false;
-  private eewIsExpected = false;
+  private maximumIntensity = '--'
+  private occurTime = 'XXXX/XX/XX XX:XX'
+  private magnitude = '---'
+  private currentType = 'Unknown'
+  private tsunamiCommentsDomestic = 'Fetching'
+  private tsunamiCommentsForeign = 'Fetching'
+  private showEew = false
+  private eewInEffect = false
+  private messagesBeforeEew?: IQuakeInfo[]
+  private lastEewReportNum = -1
+  private suspendEewUntilNumberChange = false
+  private eewReceiveTime = 'XXXX/XX/XX XX:XX'
+  private eewReportNum = ''
+  private eewIsDrill = false
+  private eewIsExpected = false
   private eewType: IBannerType = {
-    text: "Fetching information...",
-    className: "info-background"
-  };
+    text: 'Fetching information...',
+    className: 'info-background'
+  }
 
   private eewAdvice: IBannerType = {
-    text: "Fetching information...",
-    className: "info-background"
-  };
+    text: 'Fetching information...',
+    className: 'info-background'
+  }
 
   public async mounted(): Promise<void> {
     await hnapi.initialize({
@@ -124,184 +126,241 @@ export default class Map extends Vue {
       countries: true,
       japanWithSubAreas: true
     }).then(() => {
-      this.geoJson = hnapi.geoJson;
-      this.mapReady = true;
+      this.geoJson = hnapi.geoJson
+      this.mapReady = true
       this.$nextTick(() => {
-        this.updateTimer = setInterval(this.updateInfo, this.updateInterval);
-      });
-    });
+        this.updateTimer = setInterval(this.updateInfo, this.updateInterval)
+      })
+    })
   }
 
   private updateInfo(): void {
-    hnapi.makeApiRequest("/api/earthquake_info", this.updateInterval)
+    hnapi.makeApiRequest('/api/earthquake_info', this.updateInterval)
       .then((result: IInfo) => {
-        console.log(result);
+        console.log(result)
         if (result.eew.status === 0) {
-          console.log("EEW Received. Parsing...");
+          console.log('EEW Received. Parsing...')
           if (!this.eewInEffect) {
-            console.log("EEW first received.");
-            this.messagesBeforeEew = result.info;
-            this.eewInEffect = true;
-            this.lastEewReportNum = -1;
+            console.log('EEW first received.')
+            this.messagesBeforeEew = result.info
+            this.eewInEffect = true
+            this.lastEewReportNum = -1
           }
-          if (result.eew.report_num > this.lastEewReportNum) {
-            console.log("EEW updated (num != last_num). Displaying.");
-            this.lastEewReportNum = result.eew.report_num;
-            this.suspendEewUntilNumberChange = false;
-            this.parseEEWInformation(result, false);
+          if (parseInt(result.eew.report_num) > parseInt(this.lastEewReportNum)) {
+            console.log('EEW updated (num != last_num). Displaying.')
+            this.lastEewReportNum = result.eew.report_num
+            this.suspendEewUntilNumberChange = false
+            this.parseEEWInformation(result, false)
           } else if (!isEqual(result.info, this.messagesBeforeEew)) {
-            console.log("Earthquake info updated. " +
-              "Displaying new earthquake info.");
-            this.messagesBeforeEew = result.info;
-            this.suspendEewUntilNumberChange = true;
-            this.parseEarthquakeInformation(result);
+            console.log('Earthquake info updated. ' +
+              'Displaying new earthquake info.')
+            this.messagesBeforeEew = result.info
+            this.suspendEewUntilNumberChange = true
+            this.parseEarthquakeInformation(result)
           } else if (!this.suspendEewUntilNumberChange) {
-            console.log("Parameters updated. Displaying EEW.");
-            this.parseEEWInformation(result, true);
+            console.log('Parameters updated. Displaying EEW.')
+            this.parseEEWInformation(result, true)
           }
+          console.log(this.eewInEffect, this.lastEewReportNum, result.eew.report_num, this.suspendEewUntilNumberChange)
         } else {
-          this.eewInEffect = false;
-          this.parseEarthquakeInformation(result);
+          this.eewInEffect = false
+          this.parseEarthquakeInformation(result)
         }
-      });
+      })
   }
 
   private parseEarthquakeInformation(result: IInfo) {
-    this.showEew = false;
-    // TODO: Restore pane?
+    this.showEew = false
     result.info.forEach((content) => {
-      this.currentType = content.type;
+      this.currentType = content.type
       if (parseInt(this.maximumIntensity) === 99999) {
-        content.max_intensity = "-1";
+        content.max_intensity = '-1'
       }
-      if (this.currentType === "ScalePrompt") {
-        this.maximumIntensity = content.max_intensity;
-        // TODO: Delete, add intensities, add coloring, parse scaling
-        this.setBannerContent(content);
-      } else if (this.currentType === "Destination") {
-        // TODO: Add epicenter, parse scaling
-        this.setEarthquakeInformationDisplay(content);
-      } else if (this.currentType === "ScaleAndDestination") {
-        this.maximumIntensity = content.max_intensity;
-        // TODO: Delete all layers, add epicenter, add intensities,
-        // TODO: add coloring, parse scaling
-        this.hypocenterInfo = content.hypocenter;
-        this.setEarthquakeInformationDisplay(content);
-      } else if (this.currentType === "DetailScale") {
-        // TODO: Delete all layers, add intensities, add epicenter, parse scaling
-        this.setEarthquakeInformationDisplay(content);
-        this.maximumIntensity = content.max_intensity;
-      } else if (this.currentType === "Foreign") {
-        // TODO: Delete all layers, add epicenter
-        this.setEarthquakeInformationDisplay(content);
-        this.maximumIntensity = content.max_intensity;
-        // TODO: SetZoom
+      if (this.currentType === 'ScalePrompt') {
+        this.maximumIntensity = content.max_intensity
+        this.occurTime = content.occur_time
+        this.$refs.quakeMap.deleteAllLayers()
+        this.$nextTick(() => {
+          this.$refs.quakeMap.addMapIntensities(
+            content.area_intensity.areas
+          )
+          this.$refs.quakeMap.addMapColoring(
+            content.area_intensity.areas
+          )
+          this.setBannerContent(content)
+          this.$refs.quakeMap.parseMapScale()
+        })
+      } else if (this.currentType === 'Destination') {
+        this.setEarthquakeInformationDisplay(content)
+        this.$refs.quakeMap.addEpicenter(content.hypocenter)
+        this.$refs.quakeMap.parseMapScale()
+      } else if (this.currentType === 'ScaleAndDestination') {
+        this.maximumIntensity = content.max_intensity
+        this.hypocenterInfo = content.hypocenter
+        this.setEarthquakeInformationDisplay(content)
+        this.$refs.quakeMap.deleteAllLayers()
+        this.$nextTick(() => {
+          this.$refs.quakeMap.addEpicenter(content.hypocenter)
+          this.$refs.quakeMap.addMapIntensities(
+            content.area_intensity.areas
+          )
+          this.$refs.quakeMap.addMapColoring(
+            content.area_intensity.areas
+          )
+          this.$refs.quakeMap.parseMapScale()
+        })
+      } else if (this.currentType === 'DetailScale') {
+        this.setEarthquakeInformationDisplay(content)
+        this.maximumIntensity = content.max_intensity
+        this.$refs.quakeMap.deleteAllLayers()
+        this.$nextTick(() => {
+          this.$refs.quakeMap.addMapIntensities(
+            content.area_intensity.station
+          )
+          this.$refs.quakeMap.addEpicenter(content.hypocenter)
+          this.$refs.quakeMap.parseMapScale()
+        })
+      } else if (this.currentType === 'Foreign') {
+        this.setEarthquakeInformationDisplay(content)
+        this.maximumIntensity = content.max_intensity
+        this.$refs.quakeMap.deleteAllLayers()
+        this.$nextTick(() => {
+          this.$refs.quakeMap.addEpicenter(content.hypocenter)
+          this.$refs.quakeMap.setForeignEarthquake()
+        })
       }
-    });
+    })
   }
 
   private setBannerContent(content: IQuakeInfo) {
-    this.tsunamiCommentsDomestic = content.tsunami_comments.domestic;
-    this.tsunamiCommentsForeign = content.tsunami_comments.foreign;
+    this.tsunamiCommentsDomestic = content.tsunami_comments.domestic
+    this.tsunamiCommentsForeign = content.tsunami_comments.foreign
   }
 
   private setEarthquakeInformationDisplay(
     content: IQuakeInfo
   ) {
-    this.magnitude = content.magnitude;
-    this.hypocenterInfo = content.hypocenter;
-    this.setBannerContent(content);
+    this.magnitude = content.magnitude
+    this.hypocenterInfo = content.hypocenter
+    this.occurTime = content.occur_time
+    this.setBannerContent(content)
   }
 
   private setEEWEqInformationDisplay(
     content: IEEW
   ) {
-    this.eewReceiveTime = content.report_time;
-    this.magnitude = content.magnitude;
-    this.hypocenterInfo = content.hypocenter;
+    this.eewReceiveTime = content.report_time
+    this.magnitude = content.magnitude
+    this.hypocenterInfo = content.hypocenter
   }
 
   private parseEEWInformation(result: IInfo, mapUpdateOnly = false) {
-    this.showEew = true;
+    this.showEew = true
     if (result.eew.is_cancel) {
-      this.showEew = false;
-      this.tsunamiCommentsDomestic = "EEWCancelled";
-      // TODO: Restore pane?
-      // TODO: Restore flags
-      // TODO: Delete layers
-      return;
+      this.showEew = false
+      this.tsunamiCommentsDomestic = 'EEWCancelled'
+      this.eewIsDrill = false
+      this.eewIsExpected = false
+      this.$refs.quakeMap.deleteAllLayers()
+      return
     }
-    // TODO: Enable pane
     if (!mapUpdateOnly) {
-      this.setEEWEqInformationDisplay(result.eew);
-      this.maximumIntensity = result.eew.max_intensity;
+      this.setEEWEqInformationDisplay(result.eew)
+      this.maximumIntensity = result.eew.max_intensity
       if (result.eew.is_final) {
-        this.eewReportNum = `#${result.eew.report_num}-F`;
+        this.eewReportNum = `#${result.eew.report_num}-F`
       } else {
-        this.eewReportNum = `#${result.eew.report_num}`;
+        this.eewReportNum = `#${result.eew.report_num}`
       }
       if (result.eew.is_plum) {
         this.eewType = {
-          text: "PLUM determined epicenter - " +
-            "No detailed information available",
-          className: "info-background"
-        };
+          text: 'PLUM determined epicenter - ' +
+            'No detailed information available',
+          className: 'info-background'
+        }
       } else if (result.eew.report_flag === 0) {
         this.eewType = {
-          text: "Earthquake Early Warning (Forecast)",
-          className: "info-background"
-        };
+          text: 'Earthquake Early Warning (Forecast)',
+          className: 'info-background'
+        }
       } else if (result.eew.report_flag === 1) {
         this.eewType = {
-          text: "Earthquake Early Warning (Warning) - Strong Shaking Expected",
-          className: "intensity-8"
-        };
+          text: 'Earthquake Early Warning (Warning) - Strong Shaking Expected',
+          className: 'intensity-8'
+        }
       }
-      if (result.eew.max_intensity === "0" || result.eew.is_plum) {
+      if (result.eew.max_intensity === '0' || result.eew.is_plum) {
         this.eewAdvice = {
-          text: "Wait for further information",
-          className: "info-background"
-        };
+          text: 'Wait for further information',
+          className: 'info-background'
+        }
       } else if (parseInt(result.eew.hypocenter.depth.slice(0, -2)) >= 100) {
         this.eewAdvice = {
-          text: "Deep earthquake - Information may not be accurate",
-          className: "deep-earthquake"
-        };
+          text: 'Deep earthquake - Information may not be accurate',
+          className: 'deep-earthquake'
+        }
       } else if (parseFloat(result.eew.magnitude) >= 6.0) {
         this.eewAdvice = {
-          text: "Stay away from coastal areas",
-          className: "intensity-7"
-        };
+          text: 'Stay away from coastal areas',
+          className: 'intensity-7'
+        }
       } else {
         this.eewAdvice = {
-          text: "Pay attention to coastal areas",
-          className: "intensity-2"
-        };
+          text: 'Pay attention to coastal areas',
+          className: 'intensity-2'
+        }
       }
-      this.eewIsDrill = result.eew.is_test;
+      this.eewIsDrill = result.eew.is_test
     }
-    // TODO: Delete all layers
-    // TODO: Add epicenter
-    if (result.eew.area_coloring.recommended_areas) {
-      if (!isEqual({}, result.eew.area_coloring.areas)) {
-        // TODO: Add intensities, coloring
+    this.$refs.quakeMap.deleteAllLayers()
+    this.$nextTick(() => {
+      this.$refs.quakeMap.addEpicenter(result.eew.hypocenter)
+      if (result.eew.area_coloring.recommended_areas) {
+        if (!isEqual({}, result.eew.area_coloring.areas)) {
+          this.$refs.quakeMap.addMapIntensities(
+            result.eew.area_coloring.areas
+          )
+          this.$refs.quakeMap.addMapColoring(
+            result.eew.area_coloring.areas
+          )
+        } else {
+          console.warn('Areas equals null. Check server status.')
+        }
+      } else if (result.eew.area_intensity !== {}) {
+        this.$refs.quakeMap.addMapIntensities(
+          result.eew.area_intensity
+        )
       } else {
-        console.warn("Areas equals null. Check server status.");
+        console.warn('No points exist. Check server status.')
       }
-    } else if (result.eew.area_intensity !== {}) {
-      // TODO: Add intensities
-    } else {
-      console.warn("No points exist. Check server status.");
-    }
-    // TODO: Parse map scale
-    this.eewIsExpected = true;
+      this.$refs.quakeMap.parseMapScale()
+    })
 
-    // TODO: Add s, p wave circle
+    this.eewIsExpected = true
+
+    if (result.eew.s_wave !== null) {
+      this.$refs.quakeMap.addWaveCircle(
+        result.eew.hypocenter,
+        result.eew.s_wave,
+        's'
+      )
+    } else {
+      console.warn('S wave time equals null. Check server status.')
+    }
+    if (result.eew.p_wave !== null) {
+      this.$refs.quakeMap.addWaveCircle(
+        result.eew.hypocenter,
+        result.eew.p_wave,
+        'p'
+      )
+    } else {
+      console.warn('P wave time equals null. Check server status.')
+    }
   }
 }
 </script>
 
-<style lang="scss">
+<style lang='scss'>
 #main-container {
   width: 750px;
   height: 675px;

@@ -1,6 +1,7 @@
 /* eslint-disable camelcase */
 import { Dict } from '~/assets/types'
 import { IEEWAreaIntensity } from '~/assets/interfaces/parsing/EEW'
+import { IMapIcon } from '~/assets/interfaces/parsing/MapIcon'
 
 interface _IIntensityAreas {
   name: string
@@ -16,12 +17,36 @@ interface _IIntensityStations extends _IIntensityAreas {
   region_name: string
 }
 
-export interface IIntensities {
-  areas?: Dict<_IIntensityAreas>
-  station?: Dict<_IIntensityStations>
+interface _IIntensityIcon extends IMapIcon {
+  addPlusOrMinus: boolean
+  addText: string
+  specialAdd?: boolean
 }
 
-export type AllIntensities =
-  | _IIntensityStations
-  | _IIntensityAreas
-  | IEEWAreaIntensity
+export interface IMapIntensities {
+  zIndex: number
+  latitude: number
+  longitude: number
+  icon: _IIntensityIcon
+}
+
+export interface IIntensities {
+  areas: Dict<_IIntensityAreas>
+  station: Dict<_IIntensityStations>
+}
+
+export interface IIconConfig {
+  // TODO: Add color config
+  class: string
+  isAddOrMinus: boolean
+  text: string
+  addText: string
+  zIndex: number
+  specialIntensity?: boolean
+}
+
+export type AllStationIntensities = Dict<_IIntensityStations>
+
+export type AllAreaIntensities =
+  | Dict<_IIntensityAreas>
+  | Dict<IEEWAreaIntensity>
