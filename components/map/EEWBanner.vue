@@ -1,16 +1,19 @@
 <template>
-  <div :class="text.className" class="eew-banner">
-    <span>{{ text.text }}</span>
+  <div :class="eewType.className" class="eew-banner">
+    <span>{{ eewType.text }}</span>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-property-decorator";
+import { EEWInfoStore } from "~/store";
 import { IBannerType } from "~/assets/interfaces/parsing/Banner";
 
 @Component
 export default class EEWBanner extends Vue {
-  @Prop({ default: "" }) private text!: IBannerType;
+  public get eewType(): IBannerType {
+    return EEWInfoStore!.getEEWType;
+  }
 }
 </script>
 

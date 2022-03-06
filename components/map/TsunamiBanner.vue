@@ -8,13 +8,14 @@
 import { Component, Prop, Vue } from "vue-property-decorator";
 import { Dict } from "~/assets/types";
 import { IBannerType } from "~/assets/interfaces/parsing/Banner";
+import { EqInfoStore } from "~/store";
 
 @Component
 export default class Banner extends Vue {
-  @Prop({ default: "Fetching information..." }) private text!: string;
   @Prop() private type!: string;
   private show = true;
 
+  // TODO: Refactor to store
   private domesticLookupTable: Dict<IBannerType> = {
     "Fetching": {
       text: "Fetching information...",
@@ -121,6 +122,19 @@ export default class Banner extends Vue {
       };
     } else {
       return result;
+    }
+  }
+
+  public get text() {
+    if (EqInfoStore?.tsunamiComments === undefined) {
+      return "Fetching";
+    }
+    if (this.type === "domestic") {
+      return EqInfoStore.tsunamiComments.domestic;
+    } else if (this.type === "foreign") {
+      return EqInfoStore.tsunamiComments.foreign;
+    } else {
+      throw new Error("Exhaustive handling of banner type");
     }
   }
 }

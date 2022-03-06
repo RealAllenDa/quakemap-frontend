@@ -1,10 +1,6 @@
 import axios from 'axios'
-import {
-  IFetchGeoJsonConfig,
-  IGeoJsonData,
-} from '~/assets/interfaces/parsing/GeoJson'
-import { MapConfig } from '~/assets/config/map'
-import { IntensityConfig } from '~/assets/config/intensities'
+import { IFetchGeoJsonConfig } from '~/assets/interfaces/parsing/GeoJson'
+import { GeoJsonStore } from '~/assets/hnapi-store'
 
 class _ReqFailedErr extends Error {
   constructor(error: Error) {
@@ -14,10 +10,6 @@ class _ReqFailedErr extends Error {
 }
 
 class HNAPI {
-  public readonly geoJson: IGeoJsonData = {}
-  public readonly mapConfig = new MapConfig()
-  public readonly intensityConfig = new IntensityConfig()
-
   private readonly mode = process.env.NODE_ENV
   private readonly color = this.mode === 'production' ? '#43bb88' : 'orange'
   private readonly version = process.env.version
@@ -30,6 +22,11 @@ class HNAPI {
 
   private readonly useProductionAPI: boolean
   private readonly apiUrl: string
+  private profiler: null | ReturnType<typeof setInterval> = null
+  private heap: object = {
+    used: null,
+    total: null,
+  }
 
   constructor(useProductionAPI = false) {
     this.useProductionAPI = useProductionAPI
@@ -42,13 +39,14 @@ class HNAPI {
     } else {
       this.apiUrl = 'https://eqweb.daziannetwork.com'
     }
+    this.profile()
   }
 
   async fetchGeoJson(fetchGeoJsonConfig: IFetchGeoJsonConfig): Promise<void> {
     if (fetchGeoJsonConfig.japan) {
       await this.makeApiRequest('/static/geojson/japan.json')
         .then((res) => {
-          this.geoJson.japan = res
+          GeoJsonStore.setJapanGeoJson(res)
         })
         .catch((error) => {
           throw new Error('[!] Failed to load japan geojson: ' + error)
@@ -57,7 +55,7 @@ class HNAPI {
     if (fetchGeoJsonConfig.countries) {
       await this.makeApiRequest('/static/geojson/countries_without_japan.json')
         .then((res) => {
-          this.geoJson.countries = res
+          GeoJsonStore.setCountriesGeoJson(res)
         })
         .catch((error) => {
           throw new Error('[!] Failed to load countries geojson: ' + error)
@@ -66,7 +64,7 @@ class HNAPI {
     if (fetchGeoJsonConfig.japanWithSubAreas) {
       await this.makeApiRequest('/static/geojson/japan_with_sub_areas.json')
         .then((res) => {
-          this.geoJson.japanWithSubAreas = res
+          GeoJsonStore.setJapanSubAreasGeoJson(res)
         })
         .catch((error) => {
           throw new Error('[!] Failed to load japanSubAreas geojson: ' + error)
@@ -85,11 +83,9 @@ class HNAPI {
     )
     if (this.mode === 'development') {
       if (this.useProductionAPI) {
-        // eslint-disable-next-line no-console
-        console.warn(
-          '%c!!! Using (Overridden) Production API Server: ' +
-            'It can cause unexpected behaviors.',
-          'color: orange; font-size: 20px; font-weight: bold;'
+        this.warn(
+          'Using (Overridden) Production API Server: ' +
+            'It can cause unexpected behaviors.'
         )
       }
     }
@@ -110,8 +106,60 @@ class HNAPI {
         })
     })
   }
+
+  debug(...text: any[]) {
+    // eslint-disable-next-line no-console
+    console.log('%c[DEBUG]', 'color: lightgreen; font-weight: bold;', ...text)
+  }
+
+  info(...text: any[]) {
+    // eslint-disable-next-line no-console
+    console.log('%c[INFO]', 'color: lightblue; font-weight: bold;', ...text)
+  }
+
+  warn(...text: any[]) {
+    // eslint-disable-next-line no-console
+    console.log('%c[WARN]', 'color: yellow; font-weight: bold;', ...text)
+  }
+
+  error(...text: any[]) {
+    // eslint-disable-next-line no-console
+    console.log('%c[ERROR]', 'color: red; font-weight: bold;', ...text)
+  }
+
+  profile() {
+    this.heap = {
+      // @ts-ignore
+      used: performance.memory.usedJSHeapSize,
+      // @ts-ignore
+      total: performance.memory.totalJSHeapSize,
+    }
+    performance.mark('start')
+    setTimeout(() => {
+      performance.mark('end')
+      // @ts-ignore
+      const duration = performance.measure(
+        'from start to end',
+        'start',
+        'end'
+        // @ts-ignore
+      ).duration
+      this.debug(
+        `OK: ${duration} / ` +
+          `Heap Used: ${
+            // @ts-ignore
+            (performance.memory.usedJSHeapSize - this.heap.used) / 1024 / 1024
+          }MB / ` +
+          `Heap total: ${
+            // @ts-ignore
+            (performance.memory.totalJSHeapSize - this.heap.total) / 1024 / 1024
+          }MB`
+      )
+      this.profile()
+    }, 2000)
+  }
 }
 
-const hnapi = new HNAPI()
+const hnapi = new HNAPI(true)
 
 export default hnapi

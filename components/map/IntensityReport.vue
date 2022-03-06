@@ -6,11 +6,16 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-property-decorator";
+import { EqInfoStore } from "~/store";
 
 @Component
 export default class IntensityReport extends Vue {
-  @Prop({ default: "" }) private occurTime!: string;
+  public get occurTime() {
+    return EqInfoStore?.getOccurTime === undefined
+      ? "XXXX/XX/XX XX:XX"
+      : EqInfoStore!.getOccurTime
+  }
 }
 </script>
 

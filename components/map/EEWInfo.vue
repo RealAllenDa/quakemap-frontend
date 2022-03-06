@@ -6,13 +6,21 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-property-decorator";
+import { EEWInfoStore } from "~/store";
 import { IBannerType } from "~/assets/interfaces/parsing/Banner";
 
 @Component
-export default class EEWBanner extends Vue {
-  @Prop({ default: "" }) private reportNumber!: string;
-  @Prop({ default: "" }) private advice!: IBannerType;
+export default class EEWInfo extends Vue {
+  public get advice(): IBannerType {
+    return EEWInfoStore!.getEEWAdvice;
+  }
+
+  public get reportNumber(): string {
+    return EEWInfoStore?.getEEWReportNum === undefined
+      ? "#--"
+      : EEWInfoStore!.getEEWReportNum;
+  }
 }
 </script>
 

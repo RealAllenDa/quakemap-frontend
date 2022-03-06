@@ -14,11 +14,17 @@
 
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
+import { EqInfoStore } from "~/store";
 
 @Component
 export default class IntensityIcon extends Vue {
-  @Prop({ default: "--" }) private intensity!: string;
   @Prop({ default: false }) private isEew?: boolean;
+
+  public get intensity(): string {
+    return EqInfoStore?.getMaxInt === undefined
+      ? "-1"
+      : EqInfoStore?.getMaxInt;
+  }
 
   public get computedIntensity(): string {
     switch (this.intensity) {
@@ -71,7 +77,7 @@ export default class IntensityIcon extends Vue {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .intensity-icon {
   width: 275px;
   height: 100%;
@@ -111,5 +117,9 @@ export default class IntensityIcon extends Vue {
   position: absolute;
   top: 540px;
   left: 217px;
+}
+
+.margin-add {
+  margin-left: 15px;
 }
 </style>

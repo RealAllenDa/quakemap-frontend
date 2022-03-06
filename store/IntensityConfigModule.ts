@@ -1,8 +1,14 @@
+import { Module, VuexModule } from 'vuex-module-decorators'
 import { Dict } from '~/assets/types'
 import { IIconConfig } from '~/assets/interfaces/parsing/Intensities'
 
-export class IntensityConfig {
-  public intensityConversion: Dict<IIconConfig> = {
+@Module({
+  name: 'IntensityConfigModule',
+  stateFactory: true,
+  namespaced: true,
+})
+export default class IntensityConfigModule extends VuexModule {
+  intensityConversionInterfaces: Dict<IIconConfig> = {
     '1': {
       class: '1',
       isAddOrMinus: false,
@@ -76,7 +82,7 @@ export class IntensityConfig {
     },
   }
 
-  public intensityColors: Dict<string> = {
+  intensityConversionColors: Dict<string> = {
     '0': '#666666',
     '1': '#46646E',
     '2': '#1E6EE6',
@@ -88,5 +94,13 @@ export class IntensityConfig {
     '6-': '#E60000',
     '6+': '#A00000',
     '7': '#960096',
+  }
+
+  get intensityColors() {
+    return this.intensityConversionColors
+  }
+
+  get intensityConversion() {
+    return this.intensityConversionInterfaces
   }
 }

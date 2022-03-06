@@ -11,3 +11,13 @@ export default class TimeContainer extends Vue {
   @Prop({ default: "" }) private time!: string;
 }
 </script>
+
+<style lang="scss">
+.occur-label {
+  width: fit-content;
+  font-size: 16px;
+  position: relative;
+  left: 175px;
+  top: 5px;
+}
+</style>

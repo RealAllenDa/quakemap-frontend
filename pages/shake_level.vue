@@ -1,20 +1,20 @@
 <template>
   <div id="main-container">
     <span>Shake Level</span>
-    <span class="bold">Lv. {{ shakeLevel }}</span>
+    <ShakeLevelShow :shake-level="shakeLevel"></ShakeLevelShow>
     <div class="detail-points-wrapper">
-      <div>
-        <span>Green</span>
-        <span>{{ greenPoints }}</span>
-      </div>
-      <div>
-        <span>Yellow</span>
-        <span>{{ yellowPoints }}</span>
-      </div>
-      <div>
-        <span>Red</span>
-        <span>{{ redPoints }}</span>
-      </div>
+      <DetailPoints
+        :points-count="greenPoints"
+        description="Green"
+      ></DetailPoints>
+      <DetailPoints
+        :points-count="yellowPoints"
+        description="Yellow"
+      ></DetailPoints>
+      <DetailPoints
+        :points-count="redPoints"
+        description="Red"
+      ></DetailPoints>
     </div>
   </div>
 </template>
@@ -23,8 +23,12 @@
 import { Component, Vue } from "vue-property-decorator";
 import hnapi from "@/assets/hnapi";
 import { IShakeLevel } from "@/assets/interfaces/api/ShakeLevel";
+import DetailPoints from "~/components/shake_level/DetailPoints.vue";
+import ShakeLevelShow from "~/components/shake_level/ShakeLevel.vue";
 
-@Component
+@Component({
+  components: { ShakeLevelShow, DetailPoints }
+})
 export default class ShakeLevel extends Vue {
   private updateTimer: null | ReturnType<typeof setInterval> = null;
   private updateInterval = 2500;
@@ -82,9 +86,5 @@ export default class ShakeLevel extends Vue {
     text-align: center;
     box-sizing: border-box;
   }
-}
-
-.bold {
-  @include bold;
 }
 </style>
